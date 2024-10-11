@@ -1,6 +1,7 @@
 def registry = 'valaxy5332.jfrog.io'
 def imageName = 'valaxy-docker-local/ttrend'
 def version   = '2.1.2'
+def app // Declare app at the top level so it can be accessed in multiple stages
 
 pipeline {
     agent {
@@ -54,7 +55,8 @@ pipeline {
             steps {
                 script {
                     echo '<--------------- Docker Build Started --------------->'
-                    def app = docker.build("${registry}/${imageName}:${version}")
+                    // Assign the built image to the 'app' variable for use in the next stage
+                    app = docker.build("${registry}/${imageName}:${version}")
                     echo '<--------------- Docker Build Ended --------------->'
                 }
             }
@@ -63,8 +65,9 @@ pipeline {
             steps {
                 script {
                     echo '<--------------- Docker Publish Started --------------->'
-                    docker.withRegistry(registry, 'jfrog-cred') {
-                        app.push()
+                    // Use full registry URL in docker.withRegistry
+                    docker.withRegistry("https://${registry}", 'jfrog-cred') {
+                        app.push() // Push the image
                     }
                     echo '<--------------- Docker Publish Ended --------------->'
                 }
