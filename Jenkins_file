@@ -1,5 +1,5 @@
-def registry = 'https://valaxy5332.jfrog.io'
-def imageName = 'https://valaxy5332.jfrog.io/valaxy-docker-local/ttrend'
+def registry = 'valaxy5332.jfrog.io'
+def imageName = 'valaxy-docker-local/ttrend'
 def version   = '2.1.2'
 
 pipeline {
@@ -30,7 +30,7 @@ pipeline {
             steps {
                 script {
                     echo '<--------------- Jar Publish Started --------------->'
-                    def server = Artifactory.newServer url: registry + "/artifactory", credentialsId: "jfrog-cred"
+                    def server = Artifactory.newServer url: "https://${registry}/artifactory", credentialsId: "jfrog-cred"
                     def properties = "buildid=${env.BUILD_ID},commitid=${env.GIT_COMMIT}"
                     def uploadSpec = """{
                         "files": [
@@ -54,7 +54,7 @@ pipeline {
             steps {
                 script {
                     echo '<--------------- Docker Build Started --------------->'
-                    def app = docker.build("${imageName}:${version}")
+                    def app = docker.build("${registry}/${imageName}:${version}")
                     echo '<--------------- Docker Build Ended --------------->'
                 }
             }
@@ -63,7 +63,7 @@ pipeline {
             steps {
                 script {
                     echo '<--------------- Docker Publish Started --------------->'
-                    docker.withRegistry(registry, 'jfrog-cred') {
+                    docker.withRegistry("https://${registry}", 'jfrog-cred') {
                         app.push()
                     }
                     echo '<--------------- Docker Publish Ended --------------->'
